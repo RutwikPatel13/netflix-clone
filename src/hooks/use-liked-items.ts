@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { User } from '@supabase/supabase-js';
+
+const STORAGE_KEY = 'netflix_liked_items';
 
 interface LikedItem {
   id: string;
@@ -11,107 +12,166 @@ interface LikedItem {
   created_at: string;
 }
 
+// localStorage helpers
+const getLocalLikes = (): LikedItem[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+const setLocalLikes = (list: LikedItem[]) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  } catch {
+    // Storage full or unavailable
+  }
+};
+
 export function useLikedItems() {
   const [likedItems, setLikedItems] = useState<LikedItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
-  const initializedRef = useRef(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (initializedRef.current) return;
-    initializedRef.current = true;
+    // Load from localStorage first for instant UI
+    const localLikes = getLocalLikes();
+    if (localLikes.length > 0) {
+      setLikedItems(localLikes);
+    }
 
     const supabase = createClient();
 
-    const checkUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-        if (user) {
-          await fetchLikedItems(user.id);
-        }
-      } catch (error) {
-        // User not logged in
-      } finally {
-        setLoading(false);
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id ?? null);
+
+      if (user) {
+        await fetchFromSupabase(user.id);
       }
+      setLoading(false);
     };
 
-    checkUser();
+    init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchLikedItems(session.user.id);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const newUserId = session?.user?.id ?? null;
+      setUserId(newUserId);
+
+      if (newUserId) {
+        await fetchFromSupabase(newUserId);
       } else {
-        setLikedItems([]);
+        setLikedItems(getLocalLikes());
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchLikedItems = async (userId: string) => {
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('liked_items')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+  const fetchFromSupabase = async (uid: string) => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('liked_items')
+      .select('id, media_id, media_type, created_at')
+      .eq('user_id', uid)
+      .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setLikedItems(data || []);
-    } catch (error) {
-      console.error('Error fetching liked items:', error);
+    if (error) {
+      console.error('Error fetching likes:', error.message);
+      return;
     }
+
+    const list = data || [];
+    setLikedItems(list);
+    setLocalLikes(list);
   };
 
-  const isLiked = (mediaId: number, mediaType: 'movie' | 'tv' = 'movie') => {
+  const isLiked = useCallback((mediaId: number, mediaType: 'movie' | 'tv' = 'movie') => {
     return likedItems.some(item => item.media_id === mediaId && item.media_type === mediaType);
-  };
+  }, [likedItems]);
 
-  const toggleLike = async (mediaId: number, mediaType: 'movie' | 'tv' = 'movie') => {
-    if (!user) {
-      return false;
-    }
-
+  const toggleLike = useCallback(async (mediaId: number, mediaType: 'movie' | 'tv' = 'movie') => {
     const alreadyLiked = isLiked(mediaId, mediaType);
 
-    try {
+    if (alreadyLiked) {
+      // Remove like - optimistic update
+      setLikedItems(prev => {
+        const updated = prev.filter(
+          item => !(item.media_id === mediaId && item.media_type === mediaType)
+        );
+        setLocalLikes(updated);
+        return updated;
+      });
+
+      // If not logged in, just update localStorage
+      if (!userId) return true;
+
+      // Sync to Supabase
       const supabase = createClient();
-      
-      if (alreadyLiked) {
-        const { error } = await supabase
-          .from('liked_items')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('media_id', mediaId)
-          .eq('media_type', mediaType);
+      const { error } = await supabase
+        .from('liked_items')
+        .delete()
+        .eq('user_id', userId)
+        .eq('media_id', mediaId)
+        .eq('media_type', mediaType);
 
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('liked_items')
-          .insert({ media_id: mediaId, media_type: mediaType, user_id: user.id } as any);
-
-        if (error) throw error;
+      if (error) {
+        // Rollback on error
+        await fetchFromSupabase(userId);
+        return false;
       }
-
-      await fetchLikedItems(user.id);
       return true;
-    } catch (error) {
-      console.error('Error toggling like:', error);
+    }
+
+    // Add like - optimistic update
+    const tempItem: LikedItem = {
+      id: `temp_${Date.now()}`,
+      media_id: mediaId,
+      media_type: mediaType,
+      created_at: new Date().toISOString(),
+    };
+
+    setLikedItems(prev => {
+      const updated = [tempItem, ...prev];
+      setLocalLikes(updated);
+      return updated;
+    });
+
+    // If not logged in, just keep in localStorage
+    if (!userId) return true;
+
+    // Sync to Supabase
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('liked_items')
+      .insert({ media_id: mediaId, media_type: mediaType, user_id: userId } as any);
+
+    if (error) {
+      // Rollback on error
+      setLikedItems(prev => {
+        const updated = prev.filter(item => item.id !== tempItem.id);
+        setLocalLikes(updated);
+        return updated;
+      });
       return false;
     }
-  };
+
+    // Refresh to get real ID
+    await fetchFromSupabase(userId);
+    return true;
+  }, [userId, isLiked]);
 
   return {
     likedItems,
     loading,
-    user,
     isLiked,
     toggleLike,
+    isAuthenticated: !!userId,
   };
 }
 
