@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Play, Plus, ThumbsUp, ChevronDown } from 'lucide-react';
 import { Movie } from '@/lib/tmdb';
 import { getPosterUrl } from '@/lib/tmdb';
@@ -16,7 +17,8 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div
+    <Link
+      href={`/movie/${movie.id}`}
       className="group relative aspect-[2/3] cursor-pointer transition-transform duration-300 hover:scale-110 hover:z-10"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -81,7 +83,7 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

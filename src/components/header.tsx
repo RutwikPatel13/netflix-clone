@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Search, Bell, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -16,7 +16,10 @@ const navigation = [
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +29,15 @@ export function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setShowSearch(false);
+      setSearchQuery('');
+    }
+  };
 
   return (
     <header
@@ -59,12 +71,30 @@ export function Header() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-4">
-          <button
-            className="text-white hover:text-netflix-lightGray transition-colors"
-            aria-label="Search"
-          >
-            <Search className="h-5 w-5" />
-          </button>
+          {/* Search */}
+          {showSearch ? (
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                autoFocus
+                onBlur={() => {
+                  if (!searchQuery) setShowSearch(false);
+                }}
+                className="w-48 rounded bg-netflix-darkGray px-4 py-1 text-sm text-white placeholder-netflix-lightGray focus:outline-none focus:ring-1 focus:ring-white md:w-64"
+              />
+            </form>
+          ) : (
+            <button
+              onClick={() => setShowSearch(true)}
+              className="text-white hover:text-netflix-lightGray transition-colors"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+          )}
 
           <button
             className="text-white hover:text-netflix-lightGray transition-colors"
@@ -74,7 +104,7 @@ export function Header() {
           </button>
 
           <Link
-            href="/profile"
+            href="/login"
             className="flex h-8 w-8 items-center justify-center rounded bg-netflix-red text-white hover:bg-netflix-red/80 transition-colors"
             aria-label="Profile"
           >
