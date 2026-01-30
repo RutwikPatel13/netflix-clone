@@ -18,16 +18,17 @@ export function useMyList() {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
-  const initialized = useRef(false);
+  const initializedRef = useRef(false);
 
-  // Check if user is authenticated - only run once
+  // Check if user is authenticated and listen for auth changes
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    const supabase = createClient();
 
     const checkUser = async () => {
       try {
-        const supabase = createClient();
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) {
           console.log('Auth check skipped - user not logged in');
@@ -42,7 +43,21 @@ export function useMyList() {
         console.log('Auth check failed:', error);
       }
     };
+
     checkUser();
+
+    // Listen for auth state changes (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        await fetchMyList(currentUser.id);
+      } else {
+        setMyList([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // Fetch user's list

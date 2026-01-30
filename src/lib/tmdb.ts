@@ -193,3 +193,14 @@ export const getOnTheAirTVShows = async (page: number = 1): Promise<TVShow[]> =>
   const data = await fetchTMDB<TMDBResponse<TVShow>>('/tv/on_the_air', { page: page.toString() });
   return data.results;
 };
+
+// Get TV show details
+export const getTVShowDetails = async (tvId: number) => {
+  return fetchTMDB(`/tv/${tvId}`, { append_to_response: 'videos,credits' });
+};
+
+// Get TV show videos (trailers, teasers, etc.)
+export const getTVShowVideos = async (tvId: number): Promise<Video[]> => {
+  const data = await fetchTMDB<{ results: Video[] }>(`/tv/${tvId}/videos`);
+  return data.results;
+};
