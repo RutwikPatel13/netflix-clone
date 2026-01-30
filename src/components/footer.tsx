@@ -62,6 +62,20 @@ export function Footer() {
           Service Code
         </button>
 
+        {/* Disclaimer */}
+        <div className="mb-6 rounded-lg bg-netflix-gray/30 p-4">
+          <p className="text-xs text-netflix-lightGray leading-relaxed">
+            <strong className="text-white">Disclaimer:</strong> This is a demo project for educational purposes only.
+            This application does not stream actual movies or TV shows. All video content shown is official trailers
+            sourced from YouTube via the TMDB API. This project is not affiliated with, endorsed by, or connected to
+            Netflix, Inc. in any way. All movie/TV show metadata, images, and trailers are provided by{' '}
+            <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" className="text-netflix-red hover:underline">
+              The Movie Database (TMDB)
+            </a>
+            . Netflix and the Netflix logo are trademarks of Netflix, Inc.
+          </p>
+        </div>
+
         {/* Copyright */}
         <p className="text-sm text-netflix-lightGray">
           © {new Date().getFullYear()} Netflix Clone. Built with Next.js, TypeScript, and Supabase.

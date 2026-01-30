@@ -119,10 +119,38 @@ CREATE POLICY "Users can delete their own watch progress"
     ON public.watch_progress FOR DELETE
     USING (auth.uid() = user_id);
 
+-- Liked Items table (user's liked movies/shows)
+CREATE TABLE IF NOT EXISTS public.liked_items (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    media_id INTEGER NOT NULL,
+    media_type TEXT NOT NULL CHECK (media_type IN ('movie', 'tv')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, media_id, media_type)
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.liked_items ENABLE ROW LEVEL SECURITY;
+
+-- Liked Items policies
+CREATE POLICY "Users can view their own liked items"
+    ON public.liked_items FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can add liked items"
+    ON public.liked_items FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can remove liked items"
+    ON public.liked_items FOR DELETE
+    USING (auth.uid() = user_id);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_my_list_user_id ON public.my_list(user_id);
 CREATE INDEX IF NOT EXISTS idx_my_list_media ON public.my_list(media_id, media_type);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 CREATE INDEX IF NOT EXISTS idx_watch_progress_user_id ON public.watch_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_watch_progress_last_watched ON public.watch_progress(last_watched DESC);
+CREATE INDEX IF NOT EXISTS idx_liked_items_user_id ON public.liked_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_liked_items_media ON public.liked_items(media_id, media_type);
 

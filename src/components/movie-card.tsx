@@ -8,6 +8,8 @@ import { Movie } from '@/lib/tmdb';
 import { getPosterUrl } from '@/lib/tmdb';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useMyList } from '@/hooks/use-my-list';
+import { useLikedItems } from '@/hooks/use-liked-items';
 
 interface MovieCardProps {
   movie: Movie;
@@ -17,14 +19,22 @@ interface MovieCardProps {
 export function MovieCard({ movie, priority = false }: MovieCardProps) {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
-  const [inList, setInList] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
   const [imageError, setImageError] = useState(false);
+
+  const { myList, addToList, removeFromList } = useMyList();
+  const { isLiked, toggleLike } = useLikedItems();
+
+  const inList = myList.some(item => item.media_id === movie.id && item.media_type === 'movie');
+  const liked = isLiked(movie.id, 'movie');
 
   const handleAddToList = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setInList(!inList);
+    if (inList) {
+      await removeFromList(movie.id, 'movie');
+    } else {
+      await addToList(movie.id, 'movie');
+    }
   };
 
   const handlePlay = (e: React.MouseEvent) => {
@@ -33,10 +43,10 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
     router.push(`/movie/${movie.id}?autoplay=true`);
   };
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsLiked(!isLiked);
+    await toggleLike(movie.id, 'movie');
   };
 
   const handleMoreInfo = (e: React.MouseEvent) => {
@@ -98,14 +108,14 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
             <button
               className={cn(
                 "flex h-7 w-7 items-center justify-center rounded-full border-2 text-white transition-colors",
-                isLiked
+                liked
                   ? "border-white bg-white/20 hover:bg-white/30"
                   : "border-white/50 hover:border-white"
               )}
-              aria-label={isLiked ? "Unlike" : "Like"}
+              aria-label={liked ? "Unlike" : "Like"}
               onClick={handleLike}
             >
-              <ThumbsUp className={cn("h-3 w-3", isLiked && "fill-current")} />
+              <ThumbsUp className={cn("h-3 w-3", liked && "fill-current")} />
             </button>
             <button
               className="ml-auto flex h-7 w-7 items-center justify-center rounded-full border-2 border-white/50 text-white hover:border-white transition-colors"

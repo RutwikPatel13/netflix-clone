@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Play, Plus, ThumbsUp, Check } from 'lucide-react';
 import { useMyList } from '@/hooks/use-my-list';
+import { useLikedItems } from '@/hooks/use-liked-items';
 import { TrailerModal } from './trailer-modal';
 
 interface MovieDetailActionsProps {
@@ -15,10 +16,11 @@ interface MovieDetailActionsProps {
 export function MovieDetailActions({ movieId, movieTitle, trailerKey }: MovieDetailActionsProps) {
   const searchParams = useSearchParams();
   const { myList, addToList, removeFromList } = useMyList();
+  const { isLiked, toggleLike } = useLikedItems();
   const [showTrailer, setShowTrailer] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
 
   const isInList = myList.some(item => item.media_id === movieId && item.media_type === 'movie');
+  const liked = isLiked(movieId, 'movie');
   const autoplay = searchParams.get('autoplay') === 'true';
   const hasTrailer = !!trailerKey;
 
@@ -45,8 +47,8 @@ export function MovieDetailActions({ movieId, movieTitle, trailerKey }: MovieDet
     }
   };
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
+  const handleLike = async () => {
+    await toggleLike(movieId, 'movie');
   };
 
   return (
@@ -70,10 +72,10 @@ export function MovieDetailActions({ movieId, movieTitle, trailerKey }: MovieDet
         <button
           onClick={handleLike}
           className={`flex items-center gap-2 rounded px-6 py-2 text-lg font-semibold backdrop-blur-sm transition-colors ${
-            isLiked ? 'bg-white/30' : 'bg-white/20 hover:bg-white/30'
+            liked ? 'bg-white/30' : 'bg-white/20 hover:bg-white/30'
           }`}
         >
-          <ThumbsUp className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+          <ThumbsUp className={`h-5 w-5 ${liked ? 'fill-current' : ''}`} />
         </button>
       </div>
 
