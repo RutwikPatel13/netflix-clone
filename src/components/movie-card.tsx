@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Play, Plus, Check, ThumbsUp, ChevronDown } from 'lucide-react';
 import { Movie } from '@/lib/tmdb';
 import { getPosterUrl } from '@/lib/tmdb';
@@ -14,6 +15,7 @@ interface MovieCardProps {
 }
 
 export function MovieCard({ movie, priority = false }: MovieCardProps) {
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [inList, setInList] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -22,6 +24,12 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
     e.preventDefault();
     e.stopPropagation();
     setInList(!inList);
+  };
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/movie/${movie.id}?autoplay=true`);
   };
 
   return (
@@ -58,10 +66,7 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
             <button
               className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-black hover:bg-white/80 transition-colors"
               aria-label="Play"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              onClick={handlePlay}
             >
               <Play className="h-3 w-3 fill-current" />
             </button>

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Play, Plus, ThumbsUp, ChevronDown } from 'lucide-react';
 import { TVShow } from '@/lib/tmdb';
 import { getPosterUrl } from '@/lib/tmdb';
@@ -14,12 +15,19 @@ interface TVShowCardProps {
 }
 
 export function TVShowCard({ show, priority = false }: TVShowCardProps) {
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  const handlePlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/tv/${show.id}?autoplay=true`);
+  };
+
   return (
     <Link
-      href={`#`}
+      href={`/tv/${show.id}`}
       className="group relative block w-full cursor-pointer transition-transform duration-300 hover:scale-110 hover:z-10 active:scale-105"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -51,10 +59,7 @@ export function TVShowCard({ show, priority = false }: TVShowCardProps) {
             <button
               className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-black hover:bg-white/80 transition-colors"
               aria-label="Play"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              onClick={handlePlay}
             >
               <Play className="h-3 w-3 fill-current" />
             </button>

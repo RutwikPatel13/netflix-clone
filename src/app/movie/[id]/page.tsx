@@ -1,8 +1,8 @@
 import Image from 'next/image';
-import { Play, Plus, ThumbsUp } from 'lucide-react';
 import { getMovieDetails, getMovieVideos, getBackdropUrl, getPosterUrl } from '@/lib/tmdb';
 import { MovieRow } from '@/components/movie-row';
 import { getPopularMovies } from '@/lib/tmdb';
+import { MovieDetailActions } from '@/components/movie-detail-actions';
 
 interface MoviePageProps {
   params: Promise<{
@@ -69,19 +69,7 @@ export default async function MoviePage({ params }: MoviePageProps) {
                   )}
                 </div>
 
-                <div className="flex gap-3">
-                  <button className="flex items-center gap-2 rounded bg-white px-6 py-2 text-lg font-semibold text-black transition-colors hover:bg-white/80">
-                    <Play className="h-5 w-5 fill-current" />
-                    Play
-                  </button>
-                  <button className="flex items-center gap-2 rounded bg-white/20 px-6 py-2 text-lg font-semibold backdrop-blur-sm transition-colors hover:bg-white/30">
-                    <Plus className="h-5 w-5" />
-                    My List
-                  </button>
-                  <button className="flex items-center gap-2 rounded bg-white/20 px-6 py-2 text-lg font-semibold backdrop-blur-sm transition-colors hover:bg-white/30">
-                    <ThumbsUp className="h-5 w-5" />
-                  </button>
-                </div>
+                <MovieDetailActions movieId={movieId} hasTrailer={!!trailer} />
               </div>
             </div>
           </div>
@@ -99,7 +87,7 @@ export default async function MoviePage({ params }: MoviePageProps) {
             </div>
 
             {trailer && (
-              <div>
+              <div id="trailer-section">
                 <h2 className="mb-4 text-2xl font-semibold">Trailer</h2>
                 <div className="aspect-video w-full overflow-hidden rounded-lg">
                   <iframe
