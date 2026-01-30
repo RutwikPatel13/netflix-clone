@@ -33,7 +33,9 @@ export default async function TVShowsPage() {
         <TVShowRow title="Popular on Netflix" shows={popular} />
         <TVShowRow title="Top Rated" shows={topRated} />
         <TVShowRow title="Airing Today" shows={airingToday} />
-        <TVShowRow title="On The Air" shows={onTheAir} />
+        {onTheAir && onTheAir.length > 0 && (
+          <TVShowRow title="On The Air" shows={onTheAir} />
+        )}
       </div>
     </main>
   );
