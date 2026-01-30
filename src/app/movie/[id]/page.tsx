@@ -5,13 +5,14 @@ import { MovieRow } from '@/components/movie-row';
 import { getPopularMovies } from '@/lib/tmdb';
 
 interface MoviePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function MoviePage({ params }: MoviePageProps) {
-  const movieId = parseInt(params.id);
+  const { id } = await params;
+  const movieId = parseInt(id);
   const [movie, videos, similarMovies] = await Promise.all([
     getMovieDetails(movieId),
     getMovieVideos(movieId),
