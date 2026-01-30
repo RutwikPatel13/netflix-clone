@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/components/toast';
@@ -15,38 +15,55 @@ interface MyListItem {
 
 export function useMyList() {
   const [myList, setMyList] = useState<MyListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
-  const supabase = createClient();
+  const initialized = useRef(false);
 
-  // Check if user is authenticated
+  // Check if user is authenticated - only run once
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        await fetchMyList();
-      } else {
-        setLoading(false);
+      try {
+        const supabase = createClient();
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) {
+          console.log('Auth check skipped - user not logged in');
+          return;
+        }
+        setUser(user);
+        if (user) {
+          await fetchMyList(user.id);
+        }
+      } catch (error) {
+        // Silently fail - user is not logged in
+        console.log('Auth check failed:', error);
       }
     };
     checkUser();
   }, []);
 
   // Fetch user's list
-  const fetchMyList = async () => {
+  const fetchMyList = async (userId?: string) => {
+    if (!userId && !user) return;
+
     try {
       setLoading(true);
+      const supabase = createClient();
       const { data, error } = await supabase
         .from('my_list')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.log('Error fetching my list:', error.message);
+        return;
+      }
       setMyList(data || []);
     } catch (error) {
-      console.error('Error fetching my list:', error);
+      console.log('Error fetching my list:', error);
     } finally {
       setLoading(false);
     }
@@ -68,12 +85,13 @@ export function useMyList() {
     }
 
     try {
+      const supabase = createClient();
       const { error } = await supabase
         .from('my_list')
         .insert([{ media_id: mediaId, media_type: mediaType, user_id: user.id }]);
 
       if (error) throw error;
-      await fetchMyList();
+      await fetchMyList(user.id);
       showToast('Added to My List', 'success');
       return true;
     } catch (error) {
@@ -88,6 +106,7 @@ export function useMyList() {
     if (!user) return;
 
     try {
+      const supabase = createClient();
       const { error } = await supabase
         .from('my_list')
         .delete()
@@ -96,7 +115,7 @@ export function useMyList() {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      await fetchMyList();
+      await fetchMyList(user.id);
       showToast('Removed from My List', 'success');
       return true;
     } catch (error) {
