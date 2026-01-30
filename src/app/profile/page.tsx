@@ -4,9 +4,28 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { User, Edit2, LogOut, Film, Clock, Heart } from 'lucide-react';
-import { PageLoading } from '@/components/loading-spinner';
 import { showToast } from '@/components/toast';
 import Image from 'next/image';
+
+// Lightweight skeleton for instant render
+function ProfileSkeleton() {
+  return (
+    <main className="min-h-screen px-4 py-20 md:px-8">
+      <div className="mx-auto max-w-2xl">
+        <div className="h-10 w-32 bg-netflix-gray/30 rounded animate-pulse mb-8" />
+        <div className="rounded-lg bg-netflix-gray/30 p-6 md:p-8">
+          <div className="flex items-center gap-6 mb-8">
+            <div className="h-24 w-24 rounded-lg bg-netflix-gray/50 animate-pulse" />
+            <div className="space-y-3">
+              <div className="h-7 w-40 bg-netflix-gray/50 rounded animate-pulse" />
+              <div className="h-5 w-56 bg-netflix-gray/50 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
 
 interface UserProfile {
   id: string;
@@ -25,27 +44,32 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const supabase = createClient();
-      const { data: { user }, error } = await supabase.auth.getUser();
-      
-      if (error || !user) {
+    const supabase = createClient();
+
+    // Use getSession first (reads from localStorage - instant)
+    // Then verify with getUser in background
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.user) {
         router.push('/login');
         return;
       }
 
+      // Show UI immediately with session data
+      const sessionUser = session.user;
       setUser({
-        id: user.id,
-        email: user.email || '',
-        full_name: user.user_metadata?.full_name || '',
-        avatar_url: user.user_metadata?.avatar_url,
-        created_at: user.created_at,
+        id: sessionUser.id,
+        email: sessionUser.email || '',
+        full_name: sessionUser.user_metadata?.full_name || '',
+        avatar_url: sessionUser.user_metadata?.avatar_url,
+        created_at: sessionUser.created_at,
       });
-      setFullName(user.user_metadata?.full_name || '');
+      setFullName(sessionUser.user_metadata?.full_name || '');
       setLoading(false);
     };
 
-    fetchUser();
+    init();
   }, [router]);
 
   const handleSave = async () => {
@@ -78,7 +102,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <PageLoading message="Loading profile..." />;
+    return <ProfileSkeleton />;
   }
 
   if (!user) return null;
