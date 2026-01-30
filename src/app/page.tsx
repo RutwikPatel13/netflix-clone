@@ -1,22 +1,38 @@
-export default function Home() {
+import { HeroBanner } from '@/components/hero-banner';
+import { MovieRow } from '@/components/movie-row';
+import {
+  getTrendingMovies,
+  getPopularMovies,
+  getTopRatedMovies,
+  getUpcomingMovies,
+  getNowPlayingMovies,
+} from '@/lib/tmdb';
+
+export default async function Home() {
+  // Fetch all movie data in parallel
+  const [trending, popular, topRated, upcoming, nowPlaying] = await Promise.all([
+    getTrendingMovies(),
+    getPopularMovies(),
+    getTopRatedMovies(),
+    getUpcomingMovies(),
+    getNowPlayingMovies(),
+  ]);
+
+  // Use the first trending movie as the hero
+  const heroMovie = trending[0];
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="text-center">
-        <h1 className="mb-4 text-6xl font-bold text-netflix-red">Netflix Clone</h1>
-        <p className="text-xl text-netflix-lightGray">
-          A modern streaming platform built with Next.js 14, TypeScript, and Supabase
-        </p>
-        <div className="mt-8 flex gap-4 justify-center">
-          <div className="rounded-lg bg-netflix-darkGray p-4">
-            <p className="text-sm text-netflix-lightGray">✅ Next.js 14 + TypeScript</p>
-          </div>
-          <div className="rounded-lg bg-netflix-darkGray p-4">
-            <p className="text-sm text-netflix-lightGray">✅ Tailwind CSS</p>
-          </div>
-          <div className="rounded-lg bg-netflix-darkGray p-4">
-            <p className="text-sm text-netflix-lightGray">✅ Supabase Ready</p>
-          </div>
-        </div>
+    <main className="relative min-h-screen">
+      {/* Hero Banner */}
+      {heroMovie && <HeroBanner movie={heroMovie} />}
+
+      {/* Movie Rows */}
+      <div className="relative -mt-32 space-y-8 pb-16">
+        <MovieRow title="Trending Now" movies={trending} />
+        <MovieRow title="Popular on Netflix" movies={popular} />
+        <MovieRow title="Top Rated" movies={topRated} />
+        <MovieRow title="Coming Soon" movies={upcoming} />
+        <MovieRow title="Now Playing" movies={nowPlaying} />
       </div>
     </main>
   );
