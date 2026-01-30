@@ -108,14 +108,7 @@ netflix-clone/
 
 ## 📸 Screenshots
 
-### Home Page
-Browse trending movies and TV shows with a Netflix-style hero banner.
-
-### Movie Details
-View movie information, cast, and watch trailers.
-
-### My List
-Save your favorite movies and TV shows to watch later.
+![Netflix Clone Screenshot](https://api.microlink.io/?url=https://netflix-clone-opal-six-93.vercel.app&screenshot=true&meta=false&embed=screenshot.url)
 
 ## 🤝 Contributing
 
