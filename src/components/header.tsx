@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, Bell, User } from 'lucide-react';
+import { Search, Bell, User, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +20,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -73,7 +74,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           {/* Search */}
           {showSearch ? (
-            <form onSubmit={handleSearch} className="relative">
+            <form onSubmit={handleSearch} className="relative hidden sm:block">
               <input
                 type="text"
                 value={searchQuery}
@@ -89,7 +90,7 @@ export function Header() {
           ) : (
             <button
               onClick={() => setShowSearch(true)}
-              className="text-white hover:text-netflix-lightGray transition-colors"
+              className="hidden sm:block text-white hover:text-netflix-lightGray transition-colors"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />
@@ -97,7 +98,7 @@ export function Header() {
           )}
 
           <button
-            className="text-white hover:text-netflix-lightGray transition-colors"
+            className="hidden sm:block text-white hover:text-netflix-lightGray transition-colors"
             aria-label="Notifications"
           >
             <Bell className="h-5 w-5" />
@@ -110,8 +111,48 @@ export function Header() {
           >
             <User className="h-5 w-5" />
           </Link>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            className="md:hidden text-white hover:text-netflix-lightGray transition-colors"
+            aria-label="Menu"
+          >
+            {showMobileMenu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {showMobileMenu && (
+        <div className="md:hidden bg-netflix-black border-t border-netflix-gray">
+          <nav className="flex flex-col px-4 py-4">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setShowMobileMenu(false)}
+                className={cn(
+                  'py-3 text-sm font-medium transition-colors border-b border-netflix-gray last:border-0',
+                  pathname === item.href ? 'text-white' : 'text-netflix-lightGray'
+                )}
+              >
+                {item.name}
+              </Link>
+            ))}
+            <button
+              onClick={() => {
+                setShowSearch(true);
+                setShowMobileMenu(false);
+              }}
+              className="flex items-center gap-2 py-3 text-sm font-medium text-netflix-lightGray border-b border-netflix-gray"
+            >
+              <Search className="h-5 w-5" />
+              Search
+            </button>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

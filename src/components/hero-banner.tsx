@@ -11,7 +11,7 @@ interface HeroBannerProps {
 
 export function HeroBanner({ movie }: HeroBannerProps) {
   return (
-    <div className="relative h-[56.25vw] max-h-[800px] min-h-[400px] w-full">
+    <div className="relative h-[56.25vw] max-h-[800px] min-h-[300px] sm:min-h-[400px] w-full">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
@@ -52,13 +52,13 @@ export function HeroBanner({ movie }: HeroBannerProps) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
-              <button className="flex items-center gap-2 rounded bg-white px-6 py-2 text-lg font-semibold text-black transition-colors hover:bg-white/80 md:px-8 md:py-3">
-                <Play className="h-5 w-5 fill-current md:h-6 md:w-6" />
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <button className="flex items-center justify-center gap-2 rounded bg-white px-4 py-2 text-base font-semibold text-black transition-colors hover:bg-white/80 active:scale-95 sm:px-6 md:px-8 md:py-3 md:text-lg">
+                <Play className="h-4 w-4 fill-current sm:h-5 sm:w-5 md:h-6 md:w-6" />
                 Play
               </button>
-              <button className="flex items-center gap-2 rounded bg-white/20 px-6 py-2 text-lg font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30 md:px-8 md:py-3">
-                <Info className="h-5 w-5 md:h-6 md:w-6" />
+              <button className="flex items-center justify-center gap-2 rounded bg-white/20 px-4 py-2 text-base font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30 active:scale-95 sm:px-6 md:px-8 md:py-3 md:text-lg">
+                <Info className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
                 More Info
               </button>
             </div>

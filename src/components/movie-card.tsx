@@ -28,9 +28,11 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
   return (
     <Link
       href={`/movie/${movie.id}`}
-      className="group relative aspect-[2/3] cursor-pointer transition-transform duration-300 hover:scale-110 hover:z-10"
+      className="group relative aspect-[2/3] cursor-pointer transition-transform duration-300 hover:scale-110 hover:z-10 active:scale-105"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={() => setIsHovered(true)}
+      onTouchEnd={() => setTimeout(() => setIsHovered(false), 2000)}
     >
       {/* Movie Poster */}
       <div className="relative h-full w-full overflow-hidden rounded-md">
