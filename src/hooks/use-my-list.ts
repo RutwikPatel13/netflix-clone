@@ -88,7 +88,7 @@ export function useMyList() {
       const supabase = createClient();
       const { error } = await supabase
         .from('my_list')
-        .insert([{ media_id: mediaId, media_type: mediaType, user_id: user.id }]);
+        .insert({ media_id: mediaId, media_type: mediaType, user_id: user.id } as any);
 
       if (error) throw error;
       await fetchMyList(user.id);
