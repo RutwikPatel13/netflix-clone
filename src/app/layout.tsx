@@ -4,6 +4,8 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { ToastContainer } from '@/components/toast';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,11 +23,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} bg-netflix-black text-white antialiased`}>
-        <Providers>
-          <Header />
-          {children}
-          <Footer />
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            <Header />
+            {children}
+            <Footer />
+            <ToastContainer />
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );

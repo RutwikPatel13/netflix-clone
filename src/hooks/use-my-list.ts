@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { showToast } from '@/components/toast';
 
 interface MyListItem {
   id: string;
@@ -61,6 +62,7 @@ export function useMyList() {
   // Add to list
   const addToList = async (mediaId: number, mediaType: 'movie' | 'tv' = 'movie') => {
     if (!user) {
+      showToast('Please sign in to add to your list', 'info');
       router.push('/login');
       return;
     }
@@ -72,9 +74,11 @@ export function useMyList() {
 
       if (error) throw error;
       await fetchMyList();
+      showToast('Added to My List', 'success');
       return true;
     } catch (error) {
       console.error('Error adding to list:', error);
+      showToast('Failed to add to list', 'error');
       return false;
     }
   };
@@ -93,9 +97,11 @@ export function useMyList() {
 
       if (error) throw error;
       await fetchMyList();
+      showToast('Removed from My List', 'success');
       return true;
     } catch (error) {
       console.error('Error removing from list:', error);
+      showToast('Failed to remove from list', 'error');
       return false;
     }
   };
