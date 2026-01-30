@@ -6,6 +6,7 @@ import { MovieCard } from '@/components/movie-card';
 import { useMyList } from '@/hooks/use-my-list';
 import { getMovieDetails, Movie } from '@/lib/tmdb';
 import { createClient } from '@/lib/supabase/client';
+import { PageLoading } from '@/components/loading-spinner';
 
 export default function MyListPage() {
   const router = useRouter();
@@ -53,19 +54,7 @@ export default function MyListPage() {
   }, [myList, listLoading]);
 
   if (listLoading || loading) {
-    return (
-      <main className="min-h-screen px-4 py-20 md:px-8">
-        <div className="mx-auto max-w-screen-2xl">
-          <h1 className="mb-8 text-3xl font-bold md:text-4xl">My List</h1>
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-netflix-red border-t-transparent mx-auto"></div>
-              <p className="text-netflix-lightGray">Loading your list...</p>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
+    return <PageLoading message="Loading your list..." />;
   }
 
   if (!isAuthenticated) {
