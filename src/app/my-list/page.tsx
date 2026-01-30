@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { MovieCard } from '@/components/movie-card';
 import { TVShowCard } from '@/components/tv-show-card';
 import { useMyList } from '@/hooks/use-my-list';
-import { getMovieDetails, getTVShowDetails, Movie, TVShow } from '@/lib/tmdb';
+import { getMovieDetails, getTVShowDetails, MovieDetails, TVShowDetails } from '@/lib/tmdb';
 
 // Lightweight skeleton
 function MyListSkeleton() {
@@ -27,7 +27,7 @@ function MyListSkeleton() {
 interface MediaItem {
   id: number;
   type: 'movie' | 'tv';
-  data: Movie | TVShow;
+  data: MovieDetails | TVShowDetails;
 }
 
 export default function MyListPage() {
@@ -50,7 +50,7 @@ export default function MyListPage() {
       }
 
       try {
-        const promises = myList.map(async (item) => {
+        const promises = myList.map(async (item): Promise<MediaItem | null> => {
           try {
             if (item.media_type === 'movie') {
               const data = await getMovieDetails(item.media_id);
@@ -66,7 +66,8 @@ export default function MyListPage() {
 
         const results = await Promise.all(promises);
         if (isMounted) {
-          setMediaItems(results.filter((item): item is MediaItem => item !== null));
+          const validItems = results.filter((item): item is MediaItem => item !== null);
+          setMediaItems(validItems);
         }
       } catch (error) {
         console.error('Error fetching media:', error);
@@ -111,9 +112,9 @@ export default function MyListPage() {
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
               {mediaItems.map((item) => (
                 item.type === 'movie' ? (
-                  <MovieCard key={`movie-${item.id}`} movie={item.data as Movie} />
+                  <MovieCard key={`movie-${item.id}`} movie={item.data as MovieDetails} />
                 ) : (
-                  <TVShowCard key={`tv-${item.id}`} show={item.data as TVShow} />
+                  <TVShowCard key={`tv-${item.id}`} show={item.data as TVShowDetails} />
                 )
               ))}
             </div>

@@ -105,7 +105,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-xs text-netflix-lightGray">
-            This page is protected by Google reCAPTCHA to ensure you're not a bot.{' '}
+            This page is protected by Google reCAPTCHA to ensure you&apos;re not a bot.{' '}
             <button type="button" className="text-blue-500 hover:underline">
               Learn more
             </button>

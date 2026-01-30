@@ -64,7 +64,7 @@ export default async function MoviePage({ params }: MoviePageProps) {
                   <span>{movie.runtime} min</span>
                   {movie.genres && (
                     <span className="text-netflix-lightGray">
-                      {movie.genres.map((g: any) => g.name).join(', ')}
+                      {movie.genres.map((g) => g.name).join(', ')}
                     </span>
                   )}
                 </div>
@@ -111,13 +111,13 @@ export default async function MoviePage({ params }: MoviePageProps) {
             {movie.credits?.cast && (
               <div>
                 <span className="text-netflix-lightGray">Cast: </span>
-                <span>{movie.credits.cast.slice(0, 5).map((c: any) => c.name).join(', ')}</span>
+                <span>{movie.credits.cast.slice(0, 5).map((c) => c.name).join(', ')}</span>
               </div>
             )}
             {movie.production_companies && (
               <div>
                 <span className="text-netflix-lightGray">Production: </span>
-                <span>{movie.production_companies.map((c: any) => c.name).join(', ')}</span>
+                <span>{movie.production_companies.map((c) => c.name).join(', ')}</span>
               </div>
             )}
           </div>

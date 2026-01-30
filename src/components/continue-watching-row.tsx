@@ -5,13 +5,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Play, X } from 'lucide-react';
 import { useContinueWatching } from '@/hooks/use-continue-watching';
-import { getMovieDetails, Movie, getPosterUrl } from '@/lib/tmdb';
+import { getMovieDetails, MovieDetails, getPosterUrl } from '@/lib/tmdb';
 
 interface ContinueWatchingItem {
   media_id: number;
   media_type: 'movie' | 'tv';
   progress: number;
-  movie?: Movie;
+  movie?: MovieDetails;
 }
 
 export function ContinueWatchingRow() {
@@ -29,17 +29,17 @@ export function ContinueWatchingRow() {
       setLoadingItems(true);
       try {
         const movieItems = watchList.filter(w => w.media_type === 'movie');
-        const moviePromises = movieItems.map(async (item) => {
+        const moviePromises = movieItems.map(async (item): Promise<ContinueWatchingItem> => {
           try {
             const movie = await getMovieDetails(item.media_id);
-            return { ...item, movie };
+            return { media_id: item.media_id, media_type: item.media_type, progress: item.progress, movie };
           } catch {
-            return { ...item };
+            return { media_id: item.media_id, media_type: item.media_type, progress: item.progress };
           }
         });
 
         const results = await Promise.all(moviePromises);
-        setItems(results.filter(r => r.movie));
+        setItems(results.filter((r): r is ContinueWatchingItem & { movie: MovieDetails } => r.movie !== undefined));
       } catch (error) {
         console.error('Error fetching movie details:', error);
       } finally {

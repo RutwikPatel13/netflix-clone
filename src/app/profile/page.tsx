@@ -87,7 +87,7 @@ export default function ProfilePage() {
       setUser({ ...user, full_name: fullName });
       setEditing(false);
       showToast('Profile updated successfully', 'success');
-    } catch (error) {
+    } catch {
       showToast('Failed to update profile', 'error');
     } finally {
       setSaving(false);

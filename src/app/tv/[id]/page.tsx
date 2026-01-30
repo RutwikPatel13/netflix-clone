@@ -64,7 +64,7 @@ export default async function TVShowPage({ params }: TVShowPageProps) {
                   <span>{show.number_of_seasons} Season{show.number_of_seasons !== 1 ? 's' : ''}</span>
                   {show.genres && (
                     <span className="text-netflix-lightGray">
-                      {show.genres.map((g: any) => g.name).join(', ')}
+                      {show.genres.map((g) => g.name).join(', ')}
                     </span>
                   )}
                 </div>
@@ -111,19 +111,19 @@ export default async function TVShowPage({ params }: TVShowPageProps) {
             {show.credits?.cast && (
               <div>
                 <span className="text-netflix-lightGray">Cast: </span>
-                <span>{show.credits.cast.slice(0, 5).map((c: any) => c.name).join(', ')}</span>
+                <span>{show.credits.cast.slice(0, 5).map((c) => c.name).join(', ')}</span>
               </div>
             )}
             {show.networks && (
               <div>
                 <span className="text-netflix-lightGray">Network: </span>
-                <span>{show.networks.map((n: any) => n.name).join(', ')}</span>
+                <span>{show.networks.map((n) => n.name).join(', ')}</span>
               </div>
             )}
             {show.created_by && show.created_by.length > 0 && (
               <div>
                 <span className="text-netflix-lightGray">Created by: </span>
-                <span>{show.created_by.map((c: any) => c.name).join(', ')}</span>
+                <span>{show.created_by.map((c) => c.name).join(', ')}</span>
               </div>
             )}
           </div>

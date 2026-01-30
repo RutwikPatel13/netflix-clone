@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { Database } from '@/lib/supabase/database.types';
+
+type WatchProgressInsert = Database['public']['Tables']['watch_progress']['Insert'];
 
 interface WatchProgress {
   id: string;
@@ -62,23 +65,25 @@ export function useContinueWatching() {
   };
 
   const updateProgress = async (
-    mediaId: number, 
-    mediaType: 'movie' | 'tv', 
+    mediaId: number,
+    mediaType: 'movie' | 'tv',
     progress: number
   ) => {
     if (!user) return;
 
     try {
       const supabase = createClient();
-      const { error } = await supabase
+      const insertData: WatchProgressInsert = {
+        user_id: user.id as string,
+        media_id: mediaId,
+        media_type: mediaType,
+        progress: Math.min(100, Math.max(0, progress)),
+        last_watched: new Date().toISOString(),
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from('watch_progress')
-        .upsert({
-          user_id: user.id,
-          media_id: mediaId,
-          media_type: mediaType,
-          progress: Math.min(100, Math.max(0, progress)),
-          last_watched: new Date().toISOString(),
-        }, {
+        .upsert(insertData, {
           onConflict: 'user_id,media_id,media_type'
         });
 

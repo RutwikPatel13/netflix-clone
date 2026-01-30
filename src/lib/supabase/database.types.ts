@@ -56,6 +56,55 @@ export interface Database {
           created_at?: string;
         };
       };
+      liked_items: {
+        Row: {
+          id: string;
+          user_id: string;
+          media_id: number;
+          media_type: 'movie' | 'tv';
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          media_id: number;
+          media_type: 'movie' | 'tv';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          media_id?: number;
+          media_type?: 'movie' | 'tv';
+          created_at?: string;
+        };
+      };
+      watch_progress: {
+        Row: {
+          id: string;
+          user_id: string;
+          media_id: number;
+          media_type: 'movie' | 'tv';
+          progress: number;
+          last_watched: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          media_id: number;
+          media_type: 'movie' | 'tv';
+          progress: number;
+          last_watched?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          media_id?: number;
+          media_type?: 'movie' | 'tv';
+          progress?: number;
+          last_watched?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

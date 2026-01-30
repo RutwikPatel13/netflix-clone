@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { searchMovies, Movie } from '@/lib/tmdb';
 import { MovieCard } from '@/components/movie-card';
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
 
@@ -36,6 +36,7 @@ export default function SearchPage() {
     if (initialQuery) {
       handleSearch(initialQuery);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,7 +77,7 @@ export default function SearchPage() {
         {!loading && searched && movies.length === 0 && (
           <div className="text-center">
             <p className="text-xl text-netflix-lightGray">
-              No results found for "{query}". Try a different search.
+              No results found for &quot;{query}&quot;. Try a different search.
             </p>
           </div>
         )}
@@ -84,7 +85,7 @@ export default function SearchPage() {
         {!loading && movies.length > 0 && (
           <div>
             <h2 className="mb-6 text-2xl font-semibold">
-              Search Results for "{query}" ({movies.length})
+              Search Results for &quot;{query}&quot; ({movies.length})
             </h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
               {movies.map((movie) => (
@@ -106,3 +107,27 @@ export default function SearchPage() {
   );
 }
 
+function SearchSkeleton() {
+  return (
+    <main className="min-h-screen pt-24 pb-16">
+      <div className="mx-auto max-w-screen-2xl px-4 md:px-8">
+        <div className="mb-12">
+          <div className="relative mx-auto max-w-2xl">
+            <div className="w-full h-14 rounded-lg bg-netflix-gray/30 animate-pulse" />
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="h-6 w-64 mx-auto bg-netflix-gray/30 rounded animate-pulse" />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchSkeleton />}>
+      <SearchContent />
+    </Suspense>
+  );
+}

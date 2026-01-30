@@ -52,6 +52,44 @@ export interface Video {
   official: boolean;
 }
 
+// Cast member type
+export interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+}
+
+// Credits type
+export interface Credits {
+  cast: CastMember[];
+  crew: { id: number; name: string; job: string }[];
+}
+
+// Extended movie details (includes additional fields from /movie/{id} endpoint)
+export interface MovieDetails extends Movie {
+  runtime: number;
+  genres: Genre[];
+  tagline: string;
+  status: string;
+  budget: number;
+  revenue: number;
+  production_companies: { id: number; name: string; logo_path: string | null }[];
+  credits?: Credits;
+}
+
+// Extended TV show details (includes additional fields from /tv/{id} endpoint)
+export interface TVShowDetails extends TVShow {
+  number_of_seasons: number;
+  number_of_episodes: number;
+  genres: Genre[];
+  tagline: string;
+  status: string;
+  created_by: { id: number; name: string }[];
+  networks: { id: number; name: string; logo_path: string | null }[];
+  credits?: Credits;
+}
+
 interface TMDBResponse<T> {
   page: number;
   results: T[];
@@ -154,8 +192,8 @@ export const searchMovies = async (query: string, page: number = 1): Promise<Mov
 };
 
 // Get movie details
-export const getMovieDetails = async (movieId: number) => {
-  return fetchTMDB(`/movie/${movieId}`, { append_to_response: 'videos,credits' });
+export const getMovieDetails = async (movieId: number): Promise<MovieDetails> => {
+  return fetchTMDB<MovieDetails>(`/movie/${movieId}`, { append_to_response: 'videos,credits' });
 };
 
 // Get movie videos (trailers, teasers, etc.)
@@ -195,8 +233,8 @@ export const getOnTheAirTVShows = async (page: number = 1): Promise<TVShow[]> =>
 };
 
 // Get TV show details
-export const getTVShowDetails = async (tvId: number) => {
-  return fetchTMDB(`/tv/${tvId}`, { append_to_response: 'videos,credits' });
+export const getTVShowDetails = async (tvId: number): Promise<TVShowDetails> => {
+  return fetchTMDB<TVShowDetails>(`/tv/${tvId}`, { append_to_response: 'videos,credits' });
 };
 
 // Get TV show videos (trailers, teasers, etc.)
