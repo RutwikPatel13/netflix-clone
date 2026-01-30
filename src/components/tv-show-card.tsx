@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Play, Plus, ThumbsUp, ChevronDown } from 'lucide-react';
+import { Play, Plus, Check, ThumbsUp, ChevronDown } from 'lucide-react';
 import { TVShow } from '@/lib/tmdb';
 import { getPosterUrl } from '@/lib/tmdb';
 import { useState } from 'react';
@@ -17,12 +17,32 @@ interface TVShowCardProps {
 export function TVShowCard({ show, priority = false }: TVShowCardProps) {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
+  const [inList, setInList] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   const handlePlay = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     router.push(`/tv/${show.id}?autoplay=true`);
+  };
+
+  const handleAddToList = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setInList(!inList);
+  };
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLiked(!isLiked);
+  };
+
+  const handleMoreInfo = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/tv/${show.id}`);
   };
 
   return (
@@ -64,32 +84,33 @@ export function TVShowCard({ show, priority = false }: TVShowCardProps) {
               <Play className="h-3 w-3 fill-current" />
             </button>
             <button
-              className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white/50 text-white hover:border-white transition-colors"
-              aria-label="Add to My List"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              onClick={handleAddToList}
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-full border-2 text-white transition-colors",
+                inList
+                  ? "border-white bg-white/20 hover:bg-white/30"
+                  : "border-white/50 hover:border-white"
+              )}
+              aria-label={inList ? "Remove from My List" : "Add to My List"}
             >
-              <Plus className="h-3 w-3" />
+              {inList ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
             </button>
             <button
-              className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white/50 text-white hover:border-white transition-colors"
-              aria-label="Like"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-full border-2 text-white transition-colors",
+                isLiked
+                  ? "border-white bg-white/20 hover:bg-white/30"
+                  : "border-white/50 hover:border-white"
+              )}
+              aria-label={isLiked ? "Unlike" : "Like"}
+              onClick={handleLike}
             >
-              <ThumbsUp className="h-3 w-3" />
+              <ThumbsUp className={cn("h-3 w-3", isLiked && "fill-current")} />
             </button>
             <button
               className="ml-auto flex h-7 w-7 items-center justify-center rounded-full border-2 border-white/50 text-white hover:border-white transition-colors"
               aria-label="More Info"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              onClick={handleMoreInfo}
             >
               <ChevronDown className="h-3 w-3" />
             </button>

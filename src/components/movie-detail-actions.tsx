@@ -1,42 +1,39 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Play, Plus, ThumbsUp, Check } from 'lucide-react';
 import { useMyList } from '@/hooks/use-my-list';
+import { TrailerModal } from './trailer-modal';
 
 interface MovieDetailActionsProps {
   movieId: number;
-  hasTrailer: boolean;
+  movieTitle: string;
+  trailerKey: string | null;
 }
 
-export function MovieDetailActions({ movieId, hasTrailer }: MovieDetailActionsProps) {
+export function MovieDetailActions({ movieId, movieTitle, trailerKey }: MovieDetailActionsProps) {
   const searchParams = useSearchParams();
   const { myList, addToList, removeFromList } = useMyList();
-  
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+
   const isInList = myList.some(item => item.media_id === movieId && item.media_type === 'movie');
   const autoplay = searchParams.get('autoplay') === 'true';
+  const hasTrailer = !!trailerKey;
 
-  const scrollToTrailer = () => {
-    const trailerSection = document.getElementById('trailer-section');
-    if (trailerSection) {
-      trailerSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
-
-  // Auto-scroll to trailer if autoplay=true
+  // Auto-play trailer if autoplay=true
   useEffect(() => {
     if (autoplay && hasTrailer) {
-      // Small delay to ensure page is fully loaded
       setTimeout(() => {
-        scrollToTrailer();
+        setShowTrailer(true);
       }, 500);
     }
   }, [autoplay, hasTrailer]);
 
   const handlePlay = () => {
     if (hasTrailer) {
-      scrollToTrailer();
+      setShowTrailer(true);
     }
   };
 
@@ -48,26 +45,47 @@ export function MovieDetailActions({ movieId, hasTrailer }: MovieDetailActionsPr
     }
   };
 
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+  };
+
   return (
-    <div className="flex gap-3">
-      <button 
-        onClick={handlePlay}
-        className="flex items-center gap-2 rounded bg-white px-6 py-2 text-lg font-semibold text-black transition-colors hover:bg-white/80"
-      >
-        <Play className="h-5 w-5 fill-current" />
-        Play
-      </button>
-      <button 
-        onClick={handleMyList}
-        className="flex items-center gap-2 rounded bg-white/20 px-6 py-2 text-lg font-semibold backdrop-blur-sm transition-colors hover:bg-white/30"
-      >
-        {isInList ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-        {isInList ? 'In My List' : 'My List'}
-      </button>
-      <button className="flex items-center gap-2 rounded bg-white/20 px-6 py-2 text-lg font-semibold backdrop-blur-sm transition-colors hover:bg-white/30">
-        <ThumbsUp className="h-5 w-5" />
-      </button>
-    </div>
+    <>
+      <div className="flex gap-3">
+        <button
+          onClick={handlePlay}
+          disabled={!hasTrailer}
+          className="flex items-center gap-2 rounded bg-white px-6 py-2 text-lg font-semibold text-black transition-colors hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Play className="h-5 w-5 fill-current" />
+          {hasTrailer ? 'Play Trailer' : 'No Trailer'}
+        </button>
+        <button
+          onClick={handleMyList}
+          className="flex items-center gap-2 rounded bg-white/20 px-6 py-2 text-lg font-semibold backdrop-blur-sm transition-colors hover:bg-white/30"
+        >
+          {isInList ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+          {isInList ? 'In My List' : 'My List'}
+        </button>
+        <button
+          onClick={handleLike}
+          className={`flex items-center gap-2 rounded px-6 py-2 text-lg font-semibold backdrop-blur-sm transition-colors ${
+            isLiked ? 'bg-white/30' : 'bg-white/20 hover:bg-white/30'
+          }`}
+        >
+          <ThumbsUp className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+        </button>
+      </div>
+
+      {/* Trailer Modal */}
+      {showTrailer && trailerKey && (
+        <TrailerModal
+          videoKey={trailerKey}
+          title={movieTitle}
+          onClose={() => setShowTrailer(false)}
+        />
+      )}
+    </>
   );
 }
 

@@ -18,6 +18,7 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [inList, setInList] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   const handleAddToList = async (e: React.MouseEvent) => {
@@ -30,6 +31,18 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
     e.preventDefault();
     e.stopPropagation();
     router.push(`/movie/${movie.id}?autoplay=true`);
+  };
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLiked(!isLiked);
+  };
+
+  const handleMoreInfo = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/movie/${movie.id}`);
   };
 
   return (
@@ -83,22 +96,21 @@ export function MovieCard({ movie, priority = false }: MovieCardProps) {
               {inList ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
             </button>
             <button
-              className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white/50 text-white hover:border-white transition-colors"
-              aria-label="Like"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-full border-2 text-white transition-colors",
+                isLiked
+                  ? "border-white bg-white/20 hover:bg-white/30"
+                  : "border-white/50 hover:border-white"
+              )}
+              aria-label={isLiked ? "Unlike" : "Like"}
+              onClick={handleLike}
             >
-              <ThumbsUp className="h-3 w-3" />
+              <ThumbsUp className={cn("h-3 w-3", isLiked && "fill-current")} />
             </button>
             <button
               className="ml-auto flex h-7 w-7 items-center justify-center rounded-full border-2 border-white/50 text-white hover:border-white transition-colors"
               aria-label="More Info"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              onClick={handleMoreInfo}
             >
               <ChevronDown className="h-3 w-3" />
             </button>

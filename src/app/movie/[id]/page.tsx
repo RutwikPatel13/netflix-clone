@@ -69,7 +69,11 @@ export default async function MoviePage({ params }: MoviePageProps) {
                   )}
                 </div>
 
-                <MovieDetailActions movieId={movieId} hasTrailer={!!trailer} />
+                <MovieDetailActions
+                  movieId={movieId}
+                  movieTitle={movie.title}
+                  trailerKey={trailer?.key || null}
+                />
               </div>
             </div>
           </div>
