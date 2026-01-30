@@ -88,8 +88,41 @@ CREATE TRIGGER on_profile_updated
     BEFORE UPDATE ON public.profiles
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+-- Watch Progress table (continue watching feature)
+CREATE TABLE IF NOT EXISTS public.watch_progress (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    media_id INTEGER NOT NULL,
+    media_type TEXT NOT NULL CHECK (media_type IN ('movie', 'tv')),
+    progress INTEGER NOT NULL DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+    last_watched TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, media_id, media_type)
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.watch_progress ENABLE ROW LEVEL SECURITY;
+
+-- Watch Progress policies
+CREATE POLICY "Users can view their own watch progress"
+    ON public.watch_progress FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can add watch progress"
+    ON public.watch_progress FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own watch progress"
+    ON public.watch_progress FOR UPDATE
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own watch progress"
+    ON public.watch_progress FOR DELETE
+    USING (auth.uid() = user_id);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_my_list_user_id ON public.my_list(user_id);
 CREATE INDEX IF NOT EXISTS idx_my_list_media ON public.my_list(media_id, media_type);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+CREATE INDEX IF NOT EXISTS idx_watch_progress_user_id ON public.watch_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_watch_progress_last_watched ON public.watch_progress(last_watched DESC);
 

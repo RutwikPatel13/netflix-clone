@@ -105,7 +105,7 @@ export function Header() {
           </button>
 
           <Link
-            href="/login"
+            href="/profile"
             className="flex h-8 w-8 items-center justify-center rounded bg-netflix-red text-white hover:bg-netflix-red/80 transition-colors"
             aria-label="Profile"
           >
