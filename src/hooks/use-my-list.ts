@@ -40,6 +40,8 @@ export function useMyList() {
 
   // Initialize from localStorage immediately, then sync with Supabase
   useEffect(() => {
+    let isMounted = true;
+
     // Load from localStorage first for instant UI
     const localList = getLocalList();
     if (localList.length > 0) {
@@ -49,49 +51,69 @@ export function useMyList() {
     const supabase = createClient();
 
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id ?? null);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!isMounted) return;
 
-      if (user) {
-        await fetchFromSupabase(user.id);
+        setUserId(user?.id ?? null);
+
+        if (user) {
+          await fetchFromSupabase(user.id, isMounted);
+        }
+      } catch {
+        // Ignore abort errors from React Strict Mode
+      } finally {
+        if (isMounted) setLoading(false);
       }
-      setLoading(false);
     };
 
     init();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!isMounted) return;
+
       const newUserId = session?.user?.id ?? null;
       setUserId(newUserId);
 
       if (newUserId) {
-        await fetchFromSupabase(newUserId);
+        await fetchFromSupabase(newUserId, isMounted);
       } else {
         // User logged out - keep localStorage data
         setMyList(getLocalList());
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const fetchFromSupabase = async (uid: string) => {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('my_list')
-      .select('id, media_id, media_type, created_at')
-      .eq('user_id', uid)
-      .order('created_at', { ascending: false });
+  const fetchFromSupabase = async (uid: string, isMounted = true) => {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('my_list')
+        .select('id, media_id, media_type, created_at')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching list:', error.message);
-      return;
+      if (!isMounted) return;
+
+      if (error) {
+        // Ignore abort errors (caused by React Strict Mode)
+        if (error.message?.includes('abort')) return;
+        console.error('Error fetching list:', error.message);
+        return;
+      }
+
+      const list = data || [];
+      setMyList(list);
+      setLocalList(list); // Sync to localStorage
+    } catch {
+      // Ignore abort errors from React Strict Mode
     }
-
-    const list = data || [];
-    setMyList(list);
-    setLocalList(list); // Sync to localStorage
   };
 
   const isInList = useCallback((mediaId: number, mediaType: 'movie' | 'tv' = 'movie') => {
