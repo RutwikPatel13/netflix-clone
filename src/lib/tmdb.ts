@@ -170,3 +170,26 @@ export const getMovieGenres = async (): Promise<Genre[]> => {
   return data.genres;
 };
 
+// Get popular TV shows
+export const getPopularTVShows = async (page: number = 1): Promise<TVShow[]> => {
+  const data = await fetchTMDB<TMDBResponse<TVShow>>('/tv/popular', { page: page.toString() });
+  return data.results;
+};
+
+// Get top rated TV shows
+export const getTopRatedTVShows = async (page: number = 1): Promise<TVShow[]> => {
+  const data = await fetchTMDB<TMDBResponse<TVShow>>('/tv/top_rated', { page: page.toString() });
+  return data.results;
+};
+
+// Get airing today TV shows
+export const getAiringTodayTVShows = async (page: number = 1): Promise<TVShow[]> => {
+  const data = await fetchTMDB<TMDBResponse<TVShow>>('/tv/airing_today', { page: page.toString() });
+  return data.results;
+};
+
+// Get on the air TV shows
+export const getOnTheAirTVShows = async (page: number = 1): Promise<TVShow[]> => {
+  const data = await fetchTMDB<TMDBResponse<TVShow>>('/tv/on_the_air', { page: page.toString() });
+  return data.results;
+};
