@@ -106,9 +106,18 @@ netflix-clone/
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint
 
-## 📸 Screenshots
+## 📸 Preview
 
-![Netflix Clone Screenshot](https://api.microlink.io/?url=https://netflix-clone-opal-six-93.vercel.app&screenshot=true&meta=false&embed=screenshot.url)
+<div align="center">
+  <img src="https://opengraph.githubassets.com/1/RutwikPatel13/netflix-clone" alt="Netflix Clone Preview" width="100%">
+</div>
+
+### ✨ Key Features Showcase
+- **Browse**: Trending, popular, and top-rated movies and TV shows
+- **Search**: Find any movie or TV show instantly
+- **My List**: Save favorites and sync across devices
+- **Continue Watching**: Pick up where you left off
+- **Trailers**: Watch trailers in fullscreen modal
 
 ## 🤝 Contributing
 
